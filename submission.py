@@ -6,13 +6,13 @@ import os
 import mlx.core as mx
 from mlx_lm.models.qwen3 import Model, ModelArgs
 
-CHECKPOINT = os.path.join(os.path.dirname(__file__), "checkpoint", "best.npz")
+CHECKPOINT = os.path.join(os.path.dirname(__file__), "checkpoint", "best_200.npz")
 
-MODEL_DIM = 4
+MODEL_DIM = 3
 ATTENTION_HEADS = 2
 KEY_VALUE_HEADS = 1
 HEAD_DIM = 4
-INTERMEDIATE_SIZE = 6
+INTERMEDIATE_SIZE = 9
 VOCAB_SIZE = 10
 OUTPUT_DIGITS = 11
 MAX_ADDEND = 10**10 - 1
@@ -50,10 +50,10 @@ def build_model():
     mx.eval(model.parameters())
 
     metadata = {
-        "name": "228-param Qwen3 Adder",
+        "name": "200-param Qwen3 Adder",
         "author": "staghado",
-        "params": 228,
-        "architecture": "1L Qwen3, d=4, 2h/1kv, hd=4, ff=6",
+        "params": 200,
+        "architecture": "1L Qwen3, d=3, 2h/1kv, hd=4, ff=9",
         "tricks": ["Tied embeddings", "RoPE theta=3"]
     }
     return model, metadata

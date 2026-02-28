@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **228-parameter** Qwen3 transformer that does 10-digit addition at **100% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
+A **200-parameter** Qwen3 transformer that does 10-digit addition at **99.99% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -10,7 +10,12 @@ The choice of RoPE θ alone makes or breaks the training at this model param sca
 
 ## Architecture
 
-1-layer Qwen3 — `d=4, 2h/1kv, hd=4, ff=6, vocab=10, rope_theta=3`. Tied embeddings. 228 unique parameters.
+| Model | Params | Accuracy | d | ff |
+|---|---|---|---|---|
+| **200-param** | 200 | 99.99% | 3 | 9 |
+| 228-param | 228 | 100% | 4 | 6 |
+
+Both are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddings.
 
 ## Training
 
@@ -18,15 +23,15 @@ The choice of RoPE θ alone makes or breaks the training at this model param sca
 python train.py
 ```
 
-Trains for 35k steps with AdamW (lr=3e-3), batch size 128. Weights are saved to `checkpoint/best.npz`.
+Trains for 45k steps with AdamW (lr=0.01), batch size 128. Weights are saved to `checkpoint/best_200.npz`.
 
 ## Verification
 
 ```
 $ python verify.py submission.py
 
-Results: 10010/10010 correct (100.00%)
-Time: 38.5s (260 additions/sec)
+Results: 10009/10010 correct (99.99%)
+Time: 38.1s (263 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 

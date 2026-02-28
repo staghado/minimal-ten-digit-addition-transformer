@@ -1,5 +1,5 @@
 """
-Train a 228-param Qwen3 to do 10-digit addition.
+Train a 200-param Qwen3 to do 10-digit addition.
 """
 
 import random
@@ -11,18 +11,19 @@ import mlx.optimizers as optim
 from mlx.utils import tree_flatten
 from mlx_lm.models.qwen3 import Model, ModelArgs
 
-MODEL_DIM = 4
+MODEL_DIM = 3
 ATTENTION_HEADS = 2
 KEY_VALUE_HEADS = 1
 HEAD_DIM = 4
-INTERMEDIATE_SIZE = 6
+INTERMEDIATE_SIZE = 9
 VOCAB_SIZE = 10
 OUTPUT_DIGITS = 11
 MAX_ADDEND = 10**10 - 1
 ROPE_THETA = 3
 
-MAX_STEPS = 35_001
+MAX_STEPS = 10_001
 BATCH_SIZE = 128
+LR = 0.01
 
 model_args = ModelArgs(
     model_type="qwen3",
@@ -105,7 +106,7 @@ rng = random.Random(42)
 model = Model(model_args)
 mx.eval(model.parameters())
 print(f"params: {count_parameters(model)}")
-opt = optim.AdamW(learning_rate=3e-3)
+opt = optim.AdamW(learning_rate=LR)
 grad_fn = nn.value_and_grad(model, loss_fn)
 t0 = time.time()
 
@@ -126,4 +127,4 @@ for step in range(1, MAX_STEPS):
 model.eval()
 sa, da = evaluate(model, 1000, random.Random(12345))
 print(f"FINAL  | seq {sa:.3f} dig {da:.3f}")
-mx.savez("checkpoint/best.npz", **dict(tree_flatten(model.parameters())))
+mx.savez("checkpoint/best_200.npz", **dict(tree_flatten(model.parameters())))
