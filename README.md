@@ -49,12 +49,13 @@ Input:  [0] d0 d1 ... d9 [0] [0] d0 d1 ... d9 [0]
 Output: s0 s1 ... s10  (LSD-first)
 ```
 
-## Project structure
+## Citation
 
-```
-.
-├── train.py          # Training script
-├── submission.py     # Inference API
-└── checkpoint/
-    └── best.npz      # Trained weights
+```bibtex
+@misc{taghadouini2025tinyrope,
+  author       = {Said Taghadouini},
+  title        = {minimal-ten-digit-addition-transformer},
+  year         = {2026},
+  url          = {https://github.com/staghado/minimal-ten-digit-addition-transformer}
+}
 ```
