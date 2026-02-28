@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **173-parameter** Qwen3 transformer that does 10-digit addition at **99.98% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
+A **173-parameter** Qwen3 transformer that does 10-digit addition at **99.93% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -36,7 +36,7 @@ Trains for 15k steps with AdamW (lr=0.01), batch size 128. Reaches 99.93% accura
 python train.py
 ```
 
-Same setup. With optional L-BFGS fine-tuning (`python finetune_lbfgs.py`), reaches 100%.
+Same setup, reaches 99.99% accuracy.
 
 ## Verification
 
