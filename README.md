@@ -6,7 +6,7 @@ A **228-parameter** Qwen3 transformer that does 10-digit addition at **100% accu
 
 RoPE with `head_dim=4` gives two frequencies: `1/θ^(0/4) = 1.0` and `1/θ^(2/4)=1/sqrt(θ)`. The full sequence is 35 tokens (24 input + 11 output). At θ=10000.0 the slow frequency is `1/100 = 0.01` — over 35 tokens it rotates `0.01 × 34 ≈ 0.34 rad`, so positions are nearly indistinguishable. At θ=3 it's `1/√3 ≈ 0.577`, rotating `0.577 × 34 ≈ 19.6 rad` — every position gets a unique, well-separated signature.
 
-Big θ = slow rotation = positions blur together. Small θ = fast rotation = positions are sharp.
+The choice of RoPE θ alone makes or breaks the training at this model param scale.
 
 ## Architecture
 
