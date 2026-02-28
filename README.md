@@ -12,7 +12,7 @@ The choice of RoPE θ alone makes or breaks the training at this model param sca
 
 | Model | Params | Accuracy | d | ff | lr |
 |---|---|---|---|---|---|
-| **173-param** | 173 | 99.98% | 3 | 6 | 0.01 |
+| **173-param** | 173 | 99.93% | 3 | 6 | 0.01 |
 | 200-param | 200 | 99.99% | 3 | 9 | 0.01 |
 | 228-param | 228 | 100% | 4 | 6 | 3e-3 |
 
@@ -27,7 +27,7 @@ All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddin
 python train.py
 ```
 
-Trains for 45k steps with AdamW (lr=0.01), batch size 128. Reaches 99.98% accuracy (2 failures out of 10,010) without any second-order optimization.
+Trains for 15k steps with AdamW (lr=0.01), batch size 128. Reaches 99.93% accuracy (7 failures out of 10,010) without any second-order optimization.
 
 ### 200-param model
 
@@ -43,8 +43,8 @@ Same setup. With optional L-BFGS fine-tuning (`python finetune_lbfgs.py`), reach
 ```
 $ python verify.py submission.py
 
-Results: 10008/10010 correct (99.98%)
-Time: 36.7s (272 additions/sec)
+Results: 10003/10010 correct (99.93%)
+Time: 37.5s (267 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 
