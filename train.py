@@ -15,13 +15,13 @@ MODEL_DIM = 3
 ATTENTION_HEADS = 2
 KEY_VALUE_HEADS = 1
 HEAD_DIM = 4
-INTERMEDIATE_SIZE = 9
+INTERMEDIATE_SIZE = 6
 VOCAB_SIZE = 10
 OUTPUT_DIGITS = 11
 MAX_ADDEND = 10**10 - 1
 ROPE_THETA = 3
 
-MAX_STEPS = 10_001
+MAX_STEPS = 15_001
 BATCH_SIZE = 128
 LR = 0.01
 
@@ -105,7 +105,8 @@ rng = random.Random(42)
 
 model = Model(model_args)
 mx.eval(model.parameters())
-print(f"params: {count_parameters(model)}")
+n_params = count_parameters(model)
+print(f"params: {n_params}")
 opt = optim.AdamW(learning_rate=LR)
 grad_fn = nn.value_and_grad(model, loss_fn)
 t0 = time.time()
@@ -127,4 +128,4 @@ for step in range(1, MAX_STEPS):
 model.eval()
 sa, da = evaluate(model, 1000, random.Random(12345))
 print(f"FINAL  | seq {sa:.3f} dig {da:.3f}")
-mx.savez("checkpoint/best_200.npz", **dict(tree_flatten(model.parameters())))
+mx.savez(f"checkpoint/best_{n_params}.npz", **dict(tree_flatten(model.parameters())))

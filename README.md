@@ -1,37 +1,50 @@
 # minimal-ten-digit-addition-transformer
 
-A **200-parameter** Qwen3 transformer that does 10-digit addition at **99.99% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
+A **173-parameter** Qwen3 transformer that does 10-digit addition at **99.98% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
-RoPE with `head_dim=4` gives two frequencies: `1/θ^(0/4) = 1.0` and `1/θ^(2/4)=1/sqrt(θ)`. The full sequence is 35 tokens (24 input + 11 output). At θ=10000.0 the slow frequency is `1/100 = 0.01` — over 35 tokens it rotates `0.01 × 34 ≈ 0.34 rad`, so positions are nearly indistinguishable. At θ=3 it's `1/√3 ≈ 0.577`, rotating `0.577 × 34 ≈ 19.6 rad` — every position gets a unique, well-separated signature.
+RoPE with `head_dim=4` gives two frequencies: `1/θ^(0/4) = 1.0` and `1/θ^(2/4)=1/sqrt(θ)`. The full sequence is 35 tokens (24 input + 11 output). At θ=10000.0 the slow frequency is `1/100 = 0.01` so over 35 tokens it rotates `0.01 × 34 ≈ 0.34 rad`, so positions are nearly indistinguishable. At θ=3 it's `1/√3 ≈ 0.577`, rotating `0.577 × 34 ≈ 19.6 rad`, every position gets a unique, well-separated signature.
 
 The choice of RoPE θ alone makes or breaks the training at this model param scale.
 
 ## Architecture
 
-| Model | Params | Accuracy | d | ff |
-|---|---|---|---|---|
-| **200-param** | 200 | 99.99% | 3 | 9 |
-| 228-param | 228 | 100% | 4 | 6 |
+| Model | Params | Accuracy | d | ff | lr |
+|---|---|---|---|---|---|
+| **173-param** | 173 | 99.98% | 3 | 6 | 0.01 |
+| 200-param | 200 | 99.99% | 3 | 9 | 0.01 |
+| 228-param | 228 | 100% | 4 | 6 | 3e-3 |
 
-Both are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddings.
+All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddings.
 
 ## Training
 
+### 173-param model (current best)
+
 ```bash
+# Edit train.py: set INTERMEDIATE_SIZE = 6
 python train.py
 ```
 
-Trains for 45k steps with AdamW (lr=0.01), batch size 128. Weights are saved to `checkpoint/best_200.npz`.
+Trains for 45k steps with AdamW (lr=0.01), batch size 128. Reaches 99.98% accuracy (2 failures out of 10,010) without any second-order optimization.
+
+### 200-param model
+
+```bash
+# Edit train.py: set INTERMEDIATE_SIZE = 9
+python train.py
+```
+
+Same setup. With optional L-BFGS fine-tuning (`python finetune_lbfgs.py`), reaches 100%.
 
 ## Verification
 
 ```
 $ python verify.py submission.py
 
-Results: 10009/10010 correct (99.99%)
-Time: 38.1s (263 additions/sec)
+Results: 10008/10010 correct (99.98%)
+Time: 36.7s (272 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 

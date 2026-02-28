@@ -6,13 +6,11 @@ import os
 import mlx.core as mx
 from mlx_lm.models.qwen3 import Model, ModelArgs
 
-CHECKPOINT = os.path.join(os.path.dirname(__file__), "checkpoint", "best_200.npz")
-
 MODEL_DIM = 3
 ATTENTION_HEADS = 2
 KEY_VALUE_HEADS = 1
 HEAD_DIM = 4
-INTERMEDIATE_SIZE = 9
+INTERMEDIATE_SIZE = 6
 VOCAB_SIZE = 10
 OUTPUT_DIGITS = 11
 MAX_ADDEND = 10**10 - 1
@@ -42,19 +40,26 @@ def _encode(a: int, b: int) -> list[int]:
             [0] + [int(c) for c in reversed(pb)] + [0])
 
 
+def _count_params(model):
+    from mlx.utils import tree_flatten
+    return sum(x.size for _, x in tree_flatten(model.parameters()))
+
+
 def build_model():
     model = Model(_build_model_args())
-    weights = list(mx.load(CHECKPOINT).items())
+    n_params = _count_params(model)
+    checkpoint = os.path.join(os.path.dirname(__file__), "checkpoint", f"best_{n_params}.npz")
+    weights = list(mx.load(checkpoint).items())
     model.load_weights(weights)
     model.eval()
     mx.eval(model.parameters())
 
     metadata = {
-        "name": "200-param Qwen3 Adder",
+        "name": f"{n_params}-param Qwen3 Adder",
         "author": "staghado",
-        "params": 200,
-        "architecture": "1L Qwen3, d=3, 2h/1kv, hd=4, ff=9",
-        "tricks": ["Tied embeddings", "RoPE theta=3"]
+        "params": n_params,
+        "architecture": f"1L Qwen3, d={MODEL_DIM}, {ATTENTION_HEADS}h/{KEY_VALUE_HEADS}kv, hd={HEAD_DIM}, ff={INTERMEDIATE_SIZE}",
+        "tricks": ["Tied embeddings", f"RoPE theta={ROPE_THETA}"]
     }
     return model, metadata
 
