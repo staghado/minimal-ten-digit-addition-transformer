@@ -4,14 +4,15 @@ A **146-parameter** Qwen3 transformer that does 10-digit addition at **99.98% ac
 
 ## The only insight: use a tiny RoPE theta
 
-RoPE with `head_dim=4` gives two frequencies: `1/θ^(0/4) = 1.0` and `1/θ^(2/4)=1/sqrt(θ)`. The full sequence is 35 tokens (24 input + 11 output). At θ=10000.0 the slow frequency is `1/100 = 0.01` so over 35 tokens it rotates `0.01 × 34 ≈ 0.34 rad`, so positions are nearly indistinguishable. At θ=3 it's `1/√3 ≈ 0.577`, rotating `0.577 × 34 ≈ 19.6 rad`, every position gets a unique, well-separated signature.
+RoPE with $d_h=4$ gives two frequencies: $1/\theta^{0/4} = 1.0$ and $1/\theta^{2/4} = 1/\sqrt{\theta}$. The full sequence is 35 tokens (24 input + 11 output). At $\theta = 10000$ the slow frequency is $1/100 = 0.01$, so over 35 tokens it rotates $0.01 \times 34 \approx 0.34$ rad and positions are nearly indistinguishable. At $\theta = 3$ it's $1/\sqrt{3} \approx 0.577$, rotating $0.577 \times 34 \approx 19.6$ rad, every position gets a unique, well-separated signature.
 
-The choice of RoPE θ alone makes or breaks the training at this model param scale.
+The choice of $\theta$ alone makes or breaks training at this scale.
 
 ## Architecture
 
 | Model | Params | Accuracy | d | ff | lr |
 |---|---|---|---|---|---|
+| 137-param | 137 | 99.73% | 3 | 2 | 0.01 |
 | **146-param** | 146 | 99.98% | 3 | 3 | 5e-3 |
 | 155-param | 155 | 99.92% | 3 | 4 | 0.01 |
 | 173-param | 173 | 99.93% | 3 | 6 | 0.01 |
@@ -63,12 +64,11 @@ AdamW plateaus just short of 100% at every model size below 228 params. Hessian 
 
 ![Loss landscape](plots/loss_landscape.png)
 
-![Hessian eigenvalue spectrum](plots/hessian_eigenvalues.png)
-
 For example L-BFGS (or any other second-order optimizer) escapes the saddle point and gets to 100%:
 
 | Model | AdamW | + L-BFGS |
 |---|---|---|
+| 137-param | 99.73% | 100% |
 | 146-param | 99.98% | 100% |
 | 155-param | 99.92% | 100% |
 | 173-param | 99.93% | 100% |
@@ -77,6 +77,16 @@ For example L-BFGS (or any other second-order optimizer) escapes the saddle poin
 
 228-param is the only one with enough capacity for AdamW to find a true minimum on its own.
 > **Note:** LR scheduling could help refine last updates, haven't tried that!
+
+### Chaotic training dynamics at 137 params
+
+At 137 params the training trajectory becomes chaotic. Running 80 identical experiments (same weights, same data, same seed) produces different outcomes due to non-deterministic GPU floating point reductions. Only ~30% of runs converge.
+
+![Init sensitivity](plots/init_sensitivity.png)
+
+Tracking weight divergence between paired identical runs confirms exponential separation: perturbations of $10^{-6}$ grow by 7 orders of magnitude in ~500 steps, a positive Lyapunov exponent. By step 500 the trajectories are in entirely different regions of parameter space.
+
+![Trajectory divergence](plots/trajectory_divergence.png)
 
 ```bash
 python finetune.py           # finetune current model (146-param)
