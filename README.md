@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **173-parameter** Qwen3 transformer that does 10-digit addition at **99.93% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
+A **155-parameter** Qwen3 transformer that does 10-digit addition at **99.92% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -12,7 +12,8 @@ The choice of RoPE θ alone makes or breaks the training at this model param sca
 
 | Model | Params | Accuracy | d | ff | lr |
 |---|---|---|---|---|---|
-| **173-param** | 173 | 99.93% | 3 | 6 | 0.01 |
+| **155-param** | 155 | 99.92% | 3 | 4 | 0.01 |
+| 173-param | 173 | 99.93% | 3 | 6 | 0.01 |
 | 200-param | 200 | 99.99% | 3 | 9 | 0.01 |
 | 228-param | 228 | 100% | 4 | 6 | 3e-3 |
 
@@ -20,31 +21,22 @@ All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddin
 
 ## Training
 
-### 173-param model (current best)
+### 155-param model (current best)
 
 ```bash
-# Edit train.py: set INTERMEDIATE_SIZE = 6
+# Edit train.py: set INTERMEDIATE_SIZE = 4
 python train.py
 ```
 
-Trains for 15k steps with AdamW (lr=0.01), batch size 128. Reaches 99.93% accuracy (7 failures out of 10,010) without any second-order optimization.
-
-### 200-param model
-
-```bash
-# Edit train.py: set INTERMEDIATE_SIZE = 9
-python train.py
-```
-
-Same setup, reaches 99.99% accuracy.
+Trains for 45k steps with AdamW (lr=0.01), batch size 128. Reaches 99.92% accuracy (8 failures out of 10,010).
 
 ## Verification
 
 ```
 $ python verify.py submission.py
 
-Results: 10003/10010 correct (99.93%)
-Time: 37.5s (267 additions/sec)
+Results: 10002/10010 correct (99.92%)
+Time: 36.7s (273 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 
