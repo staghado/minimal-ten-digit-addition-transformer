@@ -98,34 +98,34 @@ def count_parameters(model):
     return sum(x.size for _, x in tree_flatten(model.parameters()))
 
 
-# train
-np.random.seed(42)
-mx.random.seed(42)
-rng = random.Random(42)
+if __name__ == "__main__":
+    np.random.seed(42)
+    mx.random.seed(42)
+    rng = random.Random(42)
 
-model = Model(model_args)
-mx.eval(model.parameters())
-n_params = count_parameters(model)
-print(f"params: {n_params}")
-opt = optim.AdamW(learning_rate=LR)
-grad_fn = nn.value_and_grad(model, loss_fn)
-t0 = time.time()
+    model = Model(model_args)
+    mx.eval(model.parameters())
+    n_params = count_parameters(model)
+    print(f"params: {n_params}")
+    opt = optim.AdamW(learning_rate=LR)
+    grad_fn = nn.value_and_grad(model, loss_fn)
+    t0 = time.time()
 
-for step in range(1, MAX_STEPS):
-    x, y = make_batch(BATCH_SIZE, rng)
-    loss, grads = grad_fn(model, x, y)
-    grads, _ = optim.clip_grad_norm(grads, max_norm=1.0)
-    opt.update(model, grads)
-    mx.eval(model.parameters(), opt.state)
-    if step % 100 == 0:
-        print(f"{step:6d} | loss {loss.item():.4f} | {time.time() - t0:.0f}s")
-    if step % 2000 == 0:
-        model.eval()
-        sa, da = evaluate(model, 200, random.Random(999))
-        model.train()
-        print(f"       | seq {sa:.3f} dig {da:.3f}")
+    for step in range(1, MAX_STEPS):
+        x, y = make_batch(BATCH_SIZE, rng)
+        loss, grads = grad_fn(model, x, y)
+        grads, _ = optim.clip_grad_norm(grads, max_norm=1.0)
+        opt.update(model, grads)
+        mx.eval(model.parameters(), opt.state)
+        if step % 100 == 0:
+            print(f"{step:6d} | loss {loss.item():.4f} | {time.time() - t0:.0f}s")
+        if step % 2000 == 0:
+            model.eval()
+            sa, da = evaluate(model, 200, random.Random(999))
+            model.train()
+            print(f"       | seq {sa:.3f} dig {da:.3f}")
 
-model.eval()
-sa, da = evaluate(model, 1000, random.Random(12345))
-print(f"FINAL  | seq {sa:.3f} dig {da:.3f}")
-mx.savez(f"checkpoint/best_{n_params}.npz", **dict(tree_flatten(model.parameters())))
+    model.eval()
+    sa, da = evaluate(model, 1000, random.Random(12345))
+    print(f"FINAL  | seq {sa:.3f} dig {da:.3f}")
+    mx.savez(f"checkpoint/best_{n_params}.npz", **dict(tree_flatten(model.parameters())))

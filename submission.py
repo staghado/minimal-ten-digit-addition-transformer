@@ -1,5 +1,12 @@
 """
 Submission for Nano Transformer Adder leaderboard.
+
+This submits the 155-param model (ff=4), best so far.
+The repo also contains checkpoints for:
+  - 173-param (ff=6): 99.93% accuracy
+  - 200-param (ff=9): 99.99% accuracy
+  - 228-param (d=4, ff=6): 100% accuracy
+Change INTERMEDIATE_SIZE (and MODEL_DIM for 228) to switch.
 """
 
 import os

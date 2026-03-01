@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **155-parameter** Qwen3 transformer that does 10-digit addition at **99.92% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW — no tricks, no curriculum learning, no grokking.
+A **155-parameter** Qwen3 transformer that does 10-digit addition at **99.92% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW, no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -24,13 +24,10 @@ All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddin
 ### 155-param model (current best)
 
 ```bash
-# Edit train.py: set INTERMEDIATE_SIZE = 4
 python train.py
 ```
 
 Trains for 45k steps with AdamW (lr=0.01), batch size 128. Reaches 99.92% accuracy (8 failures out of 10,010).
-
-## Verification
 
 ```
 $ python verify.py submission.py
@@ -57,6 +54,31 @@ Two integers (up to 10 digits each) are encoded digit-by-digit in **least-signif
 ```
 Input:  [0] d0 d1 ... d9 [0] [0] d0 d1 ... d9 [0]
 Output: s0 s1 ... s10  (LSD-first)
+```
+
+## Analysis: why AdamW plateaus
+
+The 155-param model gets stuck at 99.92%, 8 failures that never go away no matter how long you train. Hessian eigenvalues show: AdamW converges to a saddle point where 67 out of 155 eigenvalues are negative i.e there are directions where loss decreases but a first-order optimizer can't find them.
+
+![Loss landscape](plots/loss_landscape.png)
+
+![Hessian eigenvalue spectrum](plots/hessian_eigenvalues.png)
+
+For example L-BFGS (or any other second-order optimizer) escapes the saddle point and gets to 100%:
+
+| Model | AdamW | + L-BFGS |
+|---|---|---|
+| 155-param | 99.92% | 100% |
+| 173-param | 99.93% | 100% |
+| 200-param | 99.99% | 100% |
+| 228-param | 100% | -|
+
+228-param is the only one with enough capacity for AdamW to find a true minimum on its own.
+> **Note:** LR scheduling could help refine last updates, haven't tried that!
+
+```bash
+python finetune.py           # finetune current model (155-param)
+python finetune.py --ff 6    # finetune the 173-param model
 ```
 
 ## Citation
