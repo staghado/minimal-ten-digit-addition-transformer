@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **137-parameter** Qwen3 transformer that does 10-digit addition at **99.73% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW, no tricks, no curriculum learning, no grokking.
+A **122-parameter** Qwen3 transformer that does 10-digit addition at **99.95% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW, no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -12,14 +12,15 @@ The choice of $\theta$ alone makes or breaks training at this scale.
 
 | Model | Params | Accuracy | d | ff | lr |
 |---|---|---|---|---|---|
+| **122-param** | 122 | 99.95% | 3 | 3 | 0.02 |
 | 137-param | 137 | 99.73% | 3 | 2 | 0.01 |
-| **146-param** | 146 | 99.98% | 3 | 3 | 5e-3 |
+| 146-param | 146 | 99.98% | 3 | 3 | 5e-3 |
 | 155-param | 155 | 99.92% | 3 | 4 | 0.01 |
 | 173-param | 173 | 99.93% | 3 | 6 | 0.01 |
 | 200-param | 200 | 99.99% | 3 | 9 | 0.01 |
 | 228-param | 228 | 100% | 4 | 6 | 3e-3 |
 
-All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddings.
+All are 1-layer Qwen3 with `hd=4, vocab=10, rope_theta=3`, tied embeddings. 122-param uses `1h/1kv`, the rest use `2h/1kv`.
 
 ## Training
 
@@ -32,8 +33,8 @@ python finetune.py --ff 4      # L-BFGS for the 155-param model
 ```
 $ python verify.py submission.py
 
-Results: 10008/10010 correct (99.98%)
-Time: 36.8s (272 additions/sec)
+Results: 10005/10010 correct (99.95%)
+Time: 36.3s (276 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 
@@ -68,6 +69,7 @@ L-BFGS uses curvature information to escape the saddle point and reaches 100% on
 
 | Model | AdamW | + L-BFGS |
 |---|---|---|
+| 122-param | 99.95% | 100% |
 | 137-param | 99.73% | 100% |
 | 146-param | 99.98% | 100% |
 | 155-param | 99.92% | 100% |

@@ -20,12 +20,14 @@ from train import make_batch, loss_fn, evaluate, INTERMEDIATE_SIZE
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ff", type=int, default=INTERMEDIATE_SIZE)
+parser.add_argument("--heads", type=int, default=2)
+parser.add_argument("--kv", type=int, default=1)
 args = parser.parse_args()
 
 model_args = ModelArgs(
     model_type="qwen3", hidden_size=3, num_hidden_layers=1,
-    intermediate_size=args.ff, num_attention_heads=2, rms_norm_eps=1e-6,
-    vocab_size=10, tie_word_embeddings=True, num_key_value_heads=1,
+    intermediate_size=args.ff, num_attention_heads=args.heads, rms_norm_eps=1e-6,
+    vocab_size=10, tie_word_embeddings=True, num_key_value_heads=args.kv,
     max_position_embeddings=64, rope_theta=3, head_dim=4,
 )
 
