@@ -1,8 +1,9 @@
 """
 Submission for Nano Transformer Adder leaderboard.
 
-This submits the 146-param model (ff=3), best so far.
+This submits the 137-param model (ff=2), smallest to clear 99%.
 The repo also contains checkpoints for:
+  - 146-param (ff=3): 99.98% accuracy
   - 155-param (ff=4): 99.92% accuracy
   - 173-param (ff=6): 99.93% accuracy
   - 200-param (ff=9): 99.99% accuracy
@@ -18,7 +19,7 @@ MODEL_DIM = 3
 ATTENTION_HEADS = 2
 KEY_VALUE_HEADS = 1
 HEAD_DIM = 4
-INTERMEDIATE_SIZE = 3
+INTERMEDIATE_SIZE = 2
 VOCAB_SIZE = 10
 OUTPUT_DIGITS = 11
 MAX_ADDEND = 10**10 - 1
