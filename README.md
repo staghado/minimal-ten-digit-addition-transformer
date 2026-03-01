@@ -1,6 +1,6 @@
 # minimal-ten-digit-addition-transformer
 
-A **155-parameter** Qwen3 transformer that does 10-digit addition at **99.92% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW, no tricks, no curriculum learning, no grokking.
+A **146-parameter** Qwen3 transformer that does 10-digit addition at **99.98% accuracy** on the [AdderBoard](https://github.com/anadim/AdderBoard) 10K test suite. Trained with plain AdamW, no tricks, no curriculum learning, no grokking.
 
 ## The only insight: use a tiny RoPE theta
 
@@ -12,7 +12,8 @@ The choice of RoPE θ alone makes or breaks the training at this model param sca
 
 | Model | Params | Accuracy | d | ff | lr |
 |---|---|---|---|---|---|
-| **155-param** | 155 | 99.92% | 3 | 4 | 0.01 |
+| **146-param** | 146 | 99.98% | 3 | 3 | 5e-3 |
+| 155-param | 155 | 99.92% | 3 | 4 | 0.01 |
 | 173-param | 173 | 99.93% | 3 | 6 | 0.01 |
 | 200-param | 200 | 99.99% | 3 | 9 | 0.01 |
 | 228-param | 228 | 100% | 4 | 6 | 3e-3 |
@@ -21,19 +22,19 @@ All are 1-layer Qwen3 with `2h/1kv, hd=4, vocab=10, rope_theta=3`, tied embeddin
 
 ## Training
 
-### 155-param model (current best)
+### 146-param model (current best)
 
 ```bash
 python train.py
 ```
 
-Trains for 45k steps with AdamW (lr=0.01), batch size 128. Reaches 99.92% accuracy (8 failures out of 10,010).
+Trains for 45k steps with AdamW (lr=0.005), batch size 128. Reaches 99.98% accuracy (2 failures out of 10,010).
 
 ```
 $ python verify.py submission.py
 
-Results: 10002/10010 correct (99.92%)
-Time: 36.7s (273 additions/sec)
+Results: 10008/10010 correct (99.98%)
+Time: 36.8s (272 additions/sec)
 Status: QUALIFIED (threshold: 99%)
 ```
 
@@ -58,7 +59,7 @@ Output: s0 s1 ... s10  (LSD-first)
 
 ## Analysis: why AdamW plateaus
 
-The 155-param model gets stuck at 99.92%, 8 failures that never go away no matter how long you train. Hessian eigenvalues show: AdamW converges to a saddle point where 67 out of 155 eigenvalues are negative i.e there are directions where loss decreases but a first-order optimizer can't find them.
+AdamW plateaus just short of 100% at every model size below 228 params. Hessian eigenvalues show why: AdamW converges to a saddle point (e.g. 67/155 negative eigenvalues for the 155-param model), there are directions where loss decreases but a first-order optimizer can't find them.
 
 ![Loss landscape](plots/loss_landscape.png)
 
@@ -68,17 +69,18 @@ For example L-BFGS (or any other second-order optimizer) escapes the saddle poin
 
 | Model | AdamW | + L-BFGS |
 |---|---|---|
+| 146-param | 99.98% | 100% |
 | 155-param | 99.92% | 100% |
 | 173-param | 99.93% | 100% |
 | 200-param | 99.99% | 100% |
-| 228-param | 100% | -|
+| 228-param | 100% | - |
 
 228-param is the only one with enough capacity for AdamW to find a true minimum on its own.
 > **Note:** LR scheduling could help refine last updates, haven't tried that!
 
 ```bash
-python finetune.py           # finetune current model (155-param)
-python finetune.py --ff 6    # finetune the 173-param model
+python finetune.py           # finetune current model (146-param)
+python finetune.py --ff 4    # finetune the 155-param model
 ```
 
 ## Citation
